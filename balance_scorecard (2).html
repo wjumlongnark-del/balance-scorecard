@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balanced Scorecard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --bg:#f0f4f8; --white:#ffffff; --border:#dde3ed;
+  --gold:#c8960a; --gold-light:#fef3c7;
+  --fin:#d97706; --fin-bg:#fffbeb;
+  --cust:#0284c7; --cust-bg:#eff6ff;
+  --proc:#7c3aed; --proc-bg:#f5f3ff;
+  --learn:#be185d; --learn-bg:#fdf2f8;
+  --text:#1e293b; --text2:#475569; --text3:#94a3b8;
+  --green:#16a34a; --yellow:#ca8a04; --orange:#ea580c; --red:#dc2626;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.page{max-width:960px;margin:0 auto;padding:36px 18px 80px}
+
+/* HEADER */
+.header{background:var(--white);border-radius:18px;padding:32px 36px;margin-bottom:20px;
+  box-shadow:0 2px 16px rgba(0,0,0,.07);border-top:4px solid var(--gold);
+  display:flex;align-items:center;gap:18px}
+.header-icon{font-size:46px}
+.header h1{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;color:var(--text)}
+.header p{color:var(--text2);font-size:14px;margin-top:4px}
+
+/* PROJECT BOX */
+.project-box{background:var(--white);border-radius:14px;padding:22px 28px;margin-bottom:18px;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);border-left:5px solid var(--gold)}
+.slabel{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.project-input{width:100%;border:none;border-bottom:2px solid var(--border);
+  font-family:'Sarabun',sans-serif;font-size:20px;font-weight:700;color:var(--text);
+  padding:6px 0;outline:none;background:transparent;transition:border-color .3s}
+.project-input::placeholder{color:var(--text3);font-weight:400}
+.project-input:focus{border-bottom-color:var(--gold)}
+
+/* CARDS */
+.card{background:var(--white);border-radius:14px;margin-bottom:18px;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden}
+.card-head{display:flex;align-items:center;gap:14px;padding:18px 24px 14px;border-bottom:1px solid var(--border)}
+.ch-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.fin-top{border-top:4px solid var(--fin)} .fin-top .ch-icon{background:var(--fin-bg)}
+.cust-top{border-top:4px solid var(--cust)} .cust-top .ch-icon{background:var(--cust-bg)}
+.proc-top{border-top:4px solid var(--proc)} .proc-top .ch-icon{background:var(--proc-bg)}
+.learn-top{border-top:4px solid var(--learn)} .learn-top .ch-icon{background:var(--learn-bg)}
+.ch-title{font-size:17px;font-weight:700}
+.fin-top .ch-title{color:var(--fin)} .cust-top .ch-title{color:var(--cust)}
+.proc-top .ch-title{color:var(--proc)} .learn-top .ch-title{color:var(--learn)}
+.ch-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.card-body{padding:20px 24px}
+
+/* FIELDS */
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:16px}
+.fg:last-child{margin-bottom:0}
+.field{display:flex;flex-direction:column;gap:5px}
+.fl{font-size:12px;font-weight:700;color:var(--text2)}
+.fh{font-size:10px;font-weight:400;color:var(--text3);font-style:italic}
+.field input,.field select{font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);
+  background:#f8fafc;border:1.5px solid var(--border);border-radius:9px;padding:10px 13px;
+  outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
+.field input:focus,.field select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,150,10,.1);background:var(--white)}
+.iw{position:relative;display:flex;align-items:center}
+.iw input{padding-right:40px}
+.isuf{position:absolute;right:13px;font-size:12px;font-weight:600;color:var(--text3);pointer-events:none}
+.sw{display:flex;align-items:center;gap:10px}
+.sw input[type=range]{flex:1;height:5px;background:var(--border);border:none;border-radius:3px;padding:0;accent-color:var(--gold);box-shadow:none}
+.sv{min-width:42px;text-align:center;font-size:13px;font-weight:700;color:var(--text);
+  background:var(--gold-light);border-radius:7px;padding:3px 7px}
+
+/* ACTIONS */
+.actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:28px 0}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:11px;
+  font-family:'Sarabun',sans-serif;font-size:15px;font-weight:700;cursor:pointer;border:none;transition:all .2s}
+.btn-go{background:linear-gradient(135deg,#c8960a,#a37508);color:white;box-shadow:0 4px 18px rgba(200,150,10,.35)}
+.btn-go:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(200,150,10,.45)}
+.btn-pdf{background:linear-gradient(135deg,#0ea5e9,#0284c7);color:white;box-shadow:0 4px 18px rgba(14,165,233,.3);display:none}
+.btn-pdf:hover{transform:translateY(-2px)}
+.btn-reset{background:#f1f5f9;color:var(--text2);border:1.5px solid var(--border)}
+.btn-reset:hover{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
+
+/* RESULTS */
+#results{display:none}
+#results.show{display:block;animation:fu .5s ease}
+@keyframes fu{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.rh{text-align:center;padding:28px 18px 20px}
+.rh h2{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:var(--text)}
+.rh p{color:var(--text2);margin-top:5px;font-size:13px}
+.divider{height:1px;background:var(--border);margin:28px 0}
+
+/* OVERALL */
+.obanner{background:var(--white);border-radius:14px;padding:24px 28px;margin-bottom:18px;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.ocirc{width:90px;height:90px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;border:6px solid}
+.ocirc .on{font-size:26px;font-weight:800}
+.ocirc .ol{font-size:10px;font-weight:600;color:var(--text3)}
+.oinfo h3{font-size:18px;font-weight:700;margin-bottom:6px}
+.oinfo p{font-size:13px;color:var(--text2);line-height:1.7;flex:1;min-width:180px}
+
+/* PERSP SCORES */
+.psgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px;margin-bottom:18px}
+.pscard{background:var(--white);border-radius:12px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.pst{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.psn{font-size:12px;font-weight:700}
+.psv{font-size:17px;font-weight:800}
+.psbar{height:7px;background:var(--border);border-radius:3px;overflow:hidden}
+.psf{height:100%;border-radius:3px;transition:width 1s ease}
+.pss{font-size:11px;font-weight:600;margin-top:5px}
+
+/* ANALYSIS GRID */
+.agrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:14px;margin-bottom:18px}
+@media(max-width:620px){.agrid{grid-template-columns:1fr}}
+.acard{background:var(--white);border-radius:14px;padding:20px 22px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.actitle{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px;margin-bottom:12px;padding-bottom:9px;border-bottom:2px solid var(--border)}
+.aitem{display:flex;align-items:flex-start;gap:9px;margin-bottom:9px;font-size:13px}
+.adot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.atxt{color:var(--text2);line-height:1.65}
+.atxt strong{color:var(--text)}
+
+/* STRATEGY */
+.scard{background:var(--white);border-radius:14px;padding:24px 28px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:18px}
+.stitle{font-size:16px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.step{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;padding:13px 15px;
+  background:#f8fafc;border-radius:9px;border-left:4px solid;transition:transform .2s}
+.step:hover{transform:translateX(3px)}
+.stepn{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;color:white;flex-shrink:0}
+.stepc{font-size:13px;line-height:1.7;color:var(--text2)}
+.stepc strong{color:var(--text);font-size:13px;display:block;margin-bottom:1px}
+
+/* RECOMMEND */
+.rbox{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fde68a;
+  border-radius:14px;padding:20px 24px;margin-bottom:18px}
+.rtitle{font-size:14px;font-weight:700;color:var(--fin);display:flex;align-items:center;gap:7px;margin-bottom:12px}
+.ritem{display:flex;gap:9px;align-items:flex-start;margin-bottom:9px;font-size:13px;color:var(--text2);line-height:1.6}
+.rnum{background:var(--gold);color:white;width:19px;height:19px;border-radius:5px;font-size:11px;
+  display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;margin-top:2px}
+
+@media(max-width:580px){
+  .header{flex-direction:column;text-align:center;padding:22px 18px}
+  .obanner{flex-direction:column;text-align:center}
+  .fg{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-icon">📊</div>
+  <div>
+    <h1>Balanced Scorecard</h1>
+    <p>กรอบวิเคราะห์กลยุทธ์องค์กรใน 4 มุมมอง พร้อมการตีความผลและข้อเสนอแนะเชิงกลยุทธ์</p>
+  </div>
+</div>
+
+<!-- PROJECT -->
+<div class="project-box">
+  <div class="slabel">ข้อมูลองค์กร</div>
+  <input class="project-input" id="projectName" type="text" placeholder="ชื่อโครงการ / องค์กร...">
+  <div class="fg" style="margin-top:16px;margin-bottom:0">
+    <div class="field">
+      <label class="fl">ประเภทธุรกิจ</label>
+      <select id="industry">
+        <option value="">-- เลือก --</option>
+        <option value="manufacturing">การผลิต</option>
+        <option value="service">บริการ</option>
+        <option value="retail">ค้าปลีก</option>
+        <option value="tech">เทคโนโลยี</option>
+        <option value="healthcare">สุขภาพ</option>
+        <option value="education">การศึกษา</option>
+        <option value="government">ภาครัฐ</option>
+        <option value="other">อื่นๆ</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="fl">ขนาดองค์กร</label>
+      <select id="orgSize">
+        <option value="">-- เลือก --</option>
+        <option value="small">เล็ก (1–50 คน)</option>
+        <option value="medium">กลาง (51–500 คน)</option>
+        <option value="large">ใหญ่ (501+ คน)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="fl">ปีงบประมาณ / ช่วงเวลา</label>
+      <input type="text" id="period" placeholder="เช่น 2567 หรือ Q1/2568">
+    </div>
+  </div>
+</div>
+
+<!-- 1. FINANCIAL -->
+<div class="card fin-top">
+  <div class="card-head">
+    <div class="ch-icon">💰</div>
+    <div><div class="ch-title">มุมมองด้านการเงิน</div><div class="ch-sub">Financial Perspective — วัดผลลัพธ์ทางการเงินและความสามารถสร้างมูลค่า</div></div>
+  </div>
+  <div class="card-body">
+    <div class="fg">
+      <div class="field"><label class="fl">📈 รายได้จริง (บาท) <span class="fh">ปีนี้</span></label><input type="number" id="revenue" placeholder="เช่น 5000000" min="0"></div>
+      <div class="field"><label class="fl">🎯 เป้าหมายรายได้ (บาท)</label><input type="number" id="revenueTarget" placeholder="เช่น 6000000" min="0"></div>
+    </div>
+    <div class="fg">
+      <div class="field"><label class="fl">💵 กำไรสุทธิ (บาท)</label><input type="number" id="profit" placeholder="เช่น 1200000"></div>
+      <div class="field"><label class="fl">🎯 เป้าหมายกำไร (บาท)</label><input type="number" id="profitTarget" placeholder="เช่น 1500000" min="0"></div>
+    </div>
+    <div class="fg">
+      <div class="field"><label class="fl">📉 ต้นทุนรวม (บาท)</label><input type="number" id="totalCost" placeholder="เช่น 3800000" min="0"></div>
+      <div class="field"><label class="fl">💳 ROI (%)</label><div class="iw"><input type="number" id="roi" placeholder="เช่น 15" min="-100" max="1000"><span class="isuf">%</span></div></div>
+      <div class="field"><label class="fl">📊 การเติบโต YoY (%)</label><div class="iw"><input type="number" id="revenueGrowth" placeholder="เช่น 12" min="-100"><span class="isuf">%</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. CUSTOMER -->
+<div class="card cust-top">
+  <div class="card-head">
+    <div class="ch-icon">🤝</div>
+    <div><div class="ch-title">มุมมองด้านลูกค้า</div><div class="ch-sub">Customer Perspective — วัดความสัมพันธ์และคุณค่าที่มอบให้ลูกค้า</div></div>
+  </div>
+  <div class="card-body">
+    <div class="fg">
+      <div class="field"><label class="fl">😊 CSAT Score (%)</label><div class="sw"><input type="range" id="satisfaction" min="0" max="100" value="75" oninput="document.getElementById('satVal').textContent=this.value+'%'"><div class="sv" id="satVal">75%</div></div></div>
+      <div class="field"><label class="fl">🎯 เป้าหมาย CSAT (%)</label><div class="iw"><input type="number" id="satTarget" placeholder="เช่น 85" min="0" max="100"><span class="isuf">%</span></div></div>
+    </div>
+    <div class="fg">
+      <div class="field"><label class="fl">🔁 Retention Rate (%)</label><div class="iw"><input type="number" id="retention" placeholder="เช่น 78" min="0" max="100"><span class="isuf">%</span></div></div>
+      <div class="field"><label class="fl">🆕 ลูกค้าใหม่ (ราย/ปี)</label><input type="number" id="newCustomers" placeholder="เช่น 250" min="0"></div>
+      <div class="field"><label class="fl">😡 อัตราร้องเรียน (%)</label><div class="iw"><input type="number" id="complaint" placeholder="เช่น 3" min="0" max="100" step="0.1"><span class="isuf">%</span></div></div>
+    </div>
+    <div class="fg">
+      <div class="field"><label class="fl">🏆 ส่วนแบ่งตลาด (%)</label><div class="iw"><input type="number" id="marketShare" placeholder="เช่น 18" min="0" max="100"><span class="isuf">%</span></div></div>
+      <div class="field"><label class="fl">⭐ NPS Score (-100 ถึง +100)</label><input type="number" id="nps" placeholder="เช่น 42" min="-100" max="100"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. INTERNAL PROCESS -->
+<div class="card proc-top">
+  <div class="card-head">
+    <div class="ch-icon">⚙️</div>
+    <div><div class="ch-title">มุมมองด้านกระบวนการภายใน</div><div class="ch-sub">Internal Process Perspective — วัดประสิทธิภาพกระบวนการที่สร้างคุณค่า</div></div>
+  </div>
+  <div class="card-body">
+    <div class="fg">
+      <div class="field"><label class="fl">✅ คุณภาพผลิตภัณฑ์/บริการ (%)</label><div class="sw"><input type="range" id="quality" min="0" max="100" value="70" oninput="document.getElementById('qualVal').textContent=this.value+'%'"><div class="sv" id="qualVal">70%</div></div></div>
+      <div class="field"><label class="fl">❌ ของเสีย/ข้อผิดพลาด (%)</label><div class="iw"><input type="number" id="defectRate" placeholder="เช่น 2.5" min="0" max="100" step="0.1"><span class="isuf">%</span></div></div>
+    </div>
+    <div class="fg">
+      <div class="field"><label class="fl">⏱️ เวลาส่งมอบจริง (วัน)</label><input type="number" id="deliveryTime" placeholder="เช่น 3" min="0" step="0.5"></div>
+      <div class="field"><label class="fl">🎯 เป้าหมายเวลาส่งมอบ (วัน)</label><input type="number" id="deliveryTarget" placeholder="เช่น 2" min="0" step="0.5"></div>
+      <div class="field"><label class="fl">🔄 Cycle Time (วัน)</label><input type="number" id="cycleTime" placeholder="เช่น 5" min="0" step="0.1"></div>
+    </div>
+    <div class="fg">
+      <div class="field"><label class="fl">📦 ประสิทธิภาพการผลิต (%)</label><div class="iw"><input type="number" id="efficiency" placeholder="เช่น 82" min="0" max="100"><span class="isuf">%</span></div></div>
+      <div class="field"><label class="fl">🛡️ Compliance (%)</label><div class="iw"><input type="number" id="compliance" placeholder="เช่น 95" min="0" max="100"><span class="isuf">%</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. LEARNING -->
+<div class="card learn-top">
+  <div class="card-head">
+    <div class="ch-icon">🌱</div>
+    <div><div class="ch-title">มุมมองด้านการเรียนรู้และการเติบโต</div><div class="ch-sub">Learning & Growth Perspective — รากฐานสู่ความยั่งยืน</div></div>
+  </div>
+  <div class="card-body">
+    <div class="fg">
+      <div class="field"><label class="fl">👨‍💼 ความพึงพอใจพนักงาน (%)</label><div class="sw"><input type="range" id="empSat" min="0" max="100" value="65" oninput="document.getElementById('empVal').textContent=this.value+'%'"><div class="sv" id="empVal">65%</div></div></div>
+      <div class="field"><label class="fl">🚪 Turnover Rate (%/ปี)</label><div class="iw"><input type="number" id="turnover" placeholder="เช่น 12" min="0" max="100" step="0.1"><span class="isuf">%</span></div></div>
+    </div>
+    <div class="fg">
+      <div class="field"><label class="fl">📚 ชั่วโมงอบรม (ชม./คน/ปี)</label><input type="number" id="trainingHours" placeholder="เช่น 40" min="0"></div>
+      <div class="field"><label class="fl">💡 นวัตกรรม/โครงการใหม่ (ปีนี้)</label><input type="number" id="innovation" placeholder="เช่น 5" min="0"></div>
+    </div>
+    <div class="fg">
+      <div class="field"><label class="fl">🖥️ ระดับการนำเทคโนโลยีใหม่มาใช้</label>
+        <select id="techAdoption">
+          <option value="">-- เลือก --</option>
+          <option value="5">สูงมาก — Digital-first เต็มรูปแบบ</option>
+          <option value="4">สูง — ใช้เทคโนโลยีหลายด้าน</option>
+          <option value="3">ปานกลาง — อยู่ระหว่างเปลี่ยนผ่าน</option>
+          <option value="2">ต่ำ — ยังพึ่งพาระบบเก่า</option>
+          <option value="1">ต่ำมาก — ยังไม่มีแผน</option>
+        </select>
+      </div>
+      <div class="field"><label class="fl">🌍 วัฒนธรรมองค์กร / ESG</label>
+        <select id="culture">
+          <option value="">-- เลือก --</option>
+          <option value="5">ยอดเยี่ยม — ESG เป็น DNA ขององค์กร</option>
+          <option value="4">ดี — มีนโยบาย ESG ชัดเจน</option>
+          <option value="3">ปานกลาง — มีบางส่วน ยังไม่ครบ</option>
+          <option value="2">ต้องพัฒนา — เพิ่งเริ่มต้น</option>
+          <option value="1">ยังไม่มี — ยังไม่ได้ดำเนินการ</option>
+        </select>
+      </div>
+      <div class="field"><label class="fl">🤝 การทำงานเป็นทีม</label>
+        <select id="teamwork">
+          <option value="">-- เลือก --</option>
+          <option value="5">ยอดเยี่ยม — Knowledge Sharing เต็มรูปแบบ</option>
+          <option value="4">ดี — ทีมข้ามสายงานทำงานร่วมกันดี</option>
+          <option value="3">ปานกลาง — มีช่องว่างบางส่วน</option>
+          <option value="2">ต้องพัฒนา — แต่ละแผนกแยกส่วน</option>
+          <option value="1">อ่อนแอ — ขาดการสื่อสารภายใน</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTIONS -->
+<div class="actions">
+  <button class="btn btn-go" onclick="analyze()">⚡ ประมวลผลและวิเคราะห์</button>
+  <button class="btn btn-pdf" id="pdfBtn" onclick="downloadPDF()">📄 ดาวน์โหลด PDF</button>
+  <button class="btn btn-reset" onclick="resetAll()">🔄 รีเซ็ตข้อมูล</button>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+  <div class="divider"></div>
+  <div class="rh"><h2 id="rTitle">ผลการวิเคราะห์</h2><p id="rSub"></p></div>
+  <div class="obanner" id="obanner">
+    <div class="ocirc" id="ocirc"><span class="on" id="onum">—</span><span class="ol">คะแนนรวม</span></div>
+    <div class="oinfo"><h3 id="olabel">—</h3><p id="odesc">—</p></div>
+  </div>
+  <div class="psgrid" id="psgrid"></div>
+  <div class="agrid" id="agrid"></div>
+  <div class="scard">
+    <div class="stitle">🎯 แนวทางดำเนินกลยุทธ์ตาม Balanced Scorecard</div>
+    <div id="steps"></div>
+  </div>
+  <div class="rbox" id="rbox"></div>
+</div>
+
+</div>
+
+<script>
+const g = id => {
+  const el = document.getElementById(id);
+  if (!el) return '';
+  if (el.type === 'range') return parseFloat(el.value) || 0;
+  return el.value.trim();
+};
+const n = id => parseFloat(g(id)) || 0;
+
+function sColor(s){ return s>=80?'#16a34a':s>=65?'#2563eb':s>=50?'#ca8a04':s>=35?'#ea580c':'#dc2626' }
+function sLabel(s){
+  if(s>=80) return {l:'ดีเยี่ยม',d:'องค์กรมีสมรรถนะสูง พร้อมสำหรับการเติบโตและขยายตลาด'};
+  if(s>=65) return {l:'ดี',d:'ผลดำเนินงานดี มีจุดปรับปรุงบางส่วนที่ควรเสริมความแข็งแกร่ง'};
+  if(s>=50) return {l:'ปานกลาง',d:'ผ่านเกณฑ์ แต่ควรเร่งพัฒนาใน 1–2 มุมมองหลักที่คะแนนต่ำ'};
+  if(s>=35) return {l:'ต้องพัฒนา',d:'มีจุดอ่อนหลายด้าน ควรวางแผนแก้ไขเป็นลำดับความสำคัญ'};
+  return {l:'วิกฤต',d:'ต้องทบทวนกลยุทธ์ทั้งระบบและเร่งดำเนินการแก้ไขโดยด่วน'};
+}
+
+function calcFin(){
+  const rev=n('revenue'),revT=n('revenueTarget'),pro=n('profit'),proT=n('profitTarget'),roi=n('roi'),gr=n('revenueGrowth');
+  let s=0,c=0;
+  if(rev>0&&revT>0){s+=Math.min(100,(rev/revT)*100);c++}
+  if(pro!==0&&proT>0){s+=Math.min(100,(pro/proT)*100);c++}
+  if(document.getElementById('roi').value!==''){s+=roi<0?10:roi<5?30:roi<15?55:roi<30?75:roi<50?88:100;c++}
+  if(document.getElementById('revenueGrowth').value!==''){s+=gr<0?10:gr<3?35:gr<10?60:gr<20?80:100;c++}
+  return c>0?Math.round(s/c):null;
+}
+function calcCust(){
+  const sat=n('satisfaction'),satT=n('satTarget'),ret=n('retention'),comp=n('complaint'),nps=n('nps'),ms=n('marketShare');
+  let s=0,c=0;
+  s+=sat;c++;
+  if(satT>0){s+=Math.min(100,(sat/satT)*100);c++}
+  if(document.getElementById('retention').value!==''){s+=ret>=90?100:ret>=75?75:ret>=60?50:25;c++}
+  if(document.getElementById('complaint').value!==''){s+=comp<=1?100:comp<=3?75:comp<=7?50:20;c++}
+  if(document.getElementById('nps').value!==''){s+=nps>=70?100:nps>=50?80:nps>=30?60:nps>=0?40:15;c++}
+  if(document.getElementById('marketShare').value!==''){s+=ms>=40?100:ms>=20?75:ms>=10?55:ms>=5?38:20;c++}
+  return c>0?Math.round(s/c):null;
+}
+function calcProc(){
+  const qual=n('quality'),def=n('defectRate'),delT=n('deliveryTime'),delTarget=n('deliveryTarget'),eff=n('efficiency'),comp=n('compliance');
+  let s=0,c=0;
+  s+=qual;c++;
+  if(document.getElementById('defectRate').value!==''){s+=def<=0.5?100:def<=2?75:def<=5?50:20;c++}
+  if(delT>0&&delTarget>0){s+=delT<=delTarget?100:Math.max(0,100-((delT-delTarget)/delTarget)*50);c++}
+  if(document.getElementById('efficiency').value!==''){s+=eff;c++}
+  if(document.getElementById('compliance').value!==''){s+=comp;c++}
+  return c>0?Math.round(s/c):null;
+}
+function calcLearn(){
+  const empSat=n('empSat'),turn=n('turnover'),train=n('trainingHours'),innov=n('innovation');
+  const tech=parseInt(g('techAdoption'))||0,cult=parseInt(g('culture'))||0,team=parseInt(g('teamwork'))||0;
+  let s=0,c=0;
+  s+=empSat;c++;
+  if(document.getElementById('turnover').value!==''){s+=turn<=5?100:turn<=10?75:turn<=20?50:20;c++}
+  if(document.getElementById('trainingHours').value!==''){s+=train>=80?100:train>=40?75:train>=20?55:30;c++}
+  if(document.getElementById('innovation').value!==''){s+=innov>=10?100:innov>=5?75:innov>=2?55:35;c++}
+  if(tech>0){s+=(tech/5)*100;c++}
+  if(cult>0){s+=(cult/5)*100;c++}
+  if(team>0){s+=(team/5)*100;c++}
+  return c>0?Math.round(s/c):null;
+}
+
+function buildFinItems(){
+  const rev=n('revenue'),revT=n('revenueTarget'),pro=n('profit'),proT=n('profitTarget'),roi=n('roi'),gr=n('revenueGrowth'),cost=n('totalCost');
+  const items=[];
+  if(rev>0&&revT>0){const p=Math.round((rev/revT)*100);items.push({c:p>=100?'#16a34a':p>=80?'#ca8a04':'#dc2626',t:`รายได้จริง <strong>${rev.toLocaleString()} บาท</strong> = ${p}% ของเป้า ${p>=100?'✅ บรรลุเป้าหมาย':'⚠️ ต่ำกว่าเป้า'}`})}
+  if(pro!==0&&proT>0){const p=Math.round((pro/proT)*100);items.push({c:p>=100?'#16a34a':p>=80?'#ca8a04':'#dc2626',t:`กำไรสุทธิ <strong>${pro.toLocaleString()} บาท</strong> = ${p}% ของเป้า`})}
+  if(rev>0&&cost>0){const m=Math.round(((rev-cost)/rev)*100);items.push({c:m>=20?'#16a34a':m>=10?'#ca8a04':'#dc2626',t:`Gross Margin ≈ <strong>${m}%</strong> — ${m>=20?'ดี มีกำไรส่วนต่างที่แข็งแกร่ง':m>=10?'พอใช้ ควรลดต้นทุน':'ต่ำมาก ต้องจัดการต้นทุนเร่งด่วน'}`})}
+  if(document.getElementById('roi').value!==''){items.push({c:roi>=15?'#16a34a':roi>=5?'#ca8a04':'#dc2626',t:`ROI = <strong>${roi}%</strong> — ${roi>=30?'ผลตอบแทนยอดเยี่ยม':roi>=15?'ผลตอบแทนดี':roi>=5?'ต่ำกว่าที่ควร':roi>=0?'ต่ำมาก':'ขาดทุน ต้องทบทวนเร่งด่วน'}`})}
+  if(document.getElementById('revenueGrowth').value!==''){items.push({c:gr>=10?'#16a34a':gr>=0?'#ca8a04':'#dc2626',t:`เติบโต YoY = <strong>${gr}%</strong> — ${gr>=20?'เติบโตสูงมาก':gr>=10?'เติบโตดี':gr>=0?'เติบโตช้า ควรหาตลาดใหม่':'รายได้ลดลง ต้องวิเคราะห์สาเหตุ'}`})}
+  return items;
+}
+function buildCustItems(){
+  const sat=n('satisfaction'),satT=n('satTarget'),ret=n('retention'),comp=n('complaint'),nps=n('nps'),newC=n('newCustomers');
+  const items=[];
+  items.push({c:sat>=85?'#16a34a':sat>=70?'#ca8a04':'#dc2626',t:`CSAT = <strong>${sat}%</strong> — ${sat>=90?'ลูกค้าพึงพอใจสูงมาก เหมาะสร้าง Brand Advocacy':sat>=80?'ลูกค้าพอใจดี':sat>=70?'พอใช้ได้ ควรสำรวจจุดอ่อน':'ต่ำ ต้องเร่งแก้ปัญหาลูกค้า'}`});
+  if(document.getElementById('retention').value!==''){items.push({c:ret>=85?'#16a34a':ret>=70?'#ca8a04':'#dc2626',t:`Retention Rate = <strong>${ret}%</strong> — ${ret>=90?'ยอดเยี่ยม ฐานลูกค้าประจำแข็งแกร่ง':ret>=75?'ดี ควรต่อยอด Loyalty Program':'ต้องพัฒนาระบบรักษาลูกค้า'}`})}
+  if(document.getElementById('complaint').value!==''){items.push({c:comp<=2?'#16a34a':comp<=5?'#ca8a04':'#dc2626',t:`อัตราร้องเรียน = <strong>${comp}%</strong> — ${comp<=1?'ต่ำมาก ดีเยี่ยม':comp<=3?'อยู่ในเกณฑ์ปกติ':'สูงกว่ามาตรฐาน ต้องหาสาเหตุหลัก'}`})}
+  if(document.getElementById('nps').value!==''){items.push({c:nps>=50?'#16a34a':nps>=20?'#2563eb':nps>=0?'#ca8a04':'#dc2626',t:`NPS = <strong>${nps}</strong> — ${nps>=70?'World-class ลูกค้าแนะนำต่อสูงมาก':nps>=50?'Excellent':nps>=20?'ดี ควรแปลง Passive เป็น Promoter':nps>=0?'พอผ่าน ต้องลด Detractor':'ลบ ต้องแก้ปัญหาเร่งด่วน'}`})}
+  return items;
+}
+function buildProcItems(){
+  const qual=n('quality'),def=n('defectRate'),delT=n('deliveryTime'),delTarget=n('deliveryTarget'),eff=n('efficiency'),comp=n('compliance');
+  const items=[];
+  items.push({c:qual>=85?'#16a34a':qual>=70?'#ca8a04':'#dc2626',t:`คุณภาพ = <strong>${qual}%</strong> — ${qual>=90?'ระดับ World-class Quality':qual>=75?'คุณภาพดี มีมาตรฐาน':'ต้องลงทุนระบบ QC เพิ่มเติม'}`});
+  if(document.getElementById('defectRate').value!==''){items.push({c:def<=1?'#16a34a':def<=3?'#ca8a04':'#dc2626',t:`ของเสีย/ข้อผิดพลาด = <strong>${def}%</strong> — ${def<=0.5?'ต่ำมาก ใกล้ Six Sigma':def<=2?'อยู่ในเกณฑ์ดี':'สูง ต้องทำ Root Cause Analysis'}`})}
+  if(delT>0&&delTarget>0){const diff=delT-delTarget;items.push({c:diff<=0?'#16a34a':diff<=1?'#ca8a04':'#dc2626',t:`เวลาส่งมอบ <strong>${delT} วัน</strong> vs เป้า ${delTarget} วัน — ${diff<=0?'ส่งมอบตรงเวลา หรือเร็วกว่าเป้า':`ช้ากว่าเป้า ${diff} วัน ต้องปรับกระบวนการ`}`})}
+  if(document.getElementById('efficiency').value!==''){items.push({c:eff>=85?'#16a34a':eff>=70?'#ca8a04':'#dc2626',t:`ประสิทธิภาพ = <strong>${eff}%</strong> — ${eff>=90?'สูงมาก เหมาะสำหรับ Lean/Automation':eff>=75?'ดี มีศักยภาพพัฒนาต่อ':'ต่ำ ควรทำ Process Mapping'}`})}
+  if(document.getElementById('compliance').value!==''){items.push({c:comp>=95?'#16a34a':comp>=80?'#ca8a04':'#dc2626',t:`Compliance = <strong>${comp}%</strong> — ${comp>=98?'ปฏิบัติตามมาตรฐานเกือบสมบูรณ์':comp>=90?'ดี มีบางจุดต้องปรับ':'ต่ำ อาจมีความเสี่ยงทางกฎหมาย'}`})}
+  return items;
+}
+function buildLearnItems(){
+  const empSat=n('empSat'),turn=n('turnover'),train=n('trainingHours'),innov=n('innovation');
+  const tech=parseInt(g('techAdoption'))||0,cult=parseInt(g('culture'))||0,team=parseInt(g('teamwork'))||0;
+  const tl=['','ต่ำมาก — ต้องเร่ง Digital Transformation','ต่ำ — วางแผน Tech Roadmap','ปานกลาง — เร่ง Adoption ให้ครบ','สูง — ต่อยอด AI/Automation','สูงมาก — Digital Leader'];
+  const cl=['','ยังไม่มี ESG — ควรเริ่มทันที','เพิ่งเริ่ม — สร้าง Culture Change','ปานกลาง — ต่อยอดเป็นกลยุทธ์ระยะยาว','ดี — มีนโยบาย ESG ชัดเจน','ยอดเยี่ยม — ESG เป็น DNA ขององค์กร'];
+  const items=[];
+  items.push({c:empSat>=80?'#16a34a':empSat>=65?'#ca8a04':'#dc2626',t:`ความพึงพอใจพนักงาน = <strong>${empSat}%</strong> — ${empSat>=85?'Employer of Choice สูง':empSat>=70?'ดี พนักงานมีความผูกพัน':'ต้องพัฒนา Engagement Program'}`});
+  if(document.getElementById('turnover').value!==''){items.push({c:turn<=7?'#16a34a':turn<=15?'#ca8a04':'#dc2626',t:`Turnover = <strong>${turn}%</strong> — ${turn<=5?'ต่ำมาก รักษาคนเก่งได้ดี':turn<=10?'อยู่ในระดับปกติ':turn<=20?'สูงกว่าค่าเฉลี่ย ควรทำ Exit Interview':'สูงมาก ต้องแก้ Retention เร่งด่วน'}`})}
+  if(document.getElementById('trainingHours').value!==''){items.push({c:train>=40?'#16a34a':train>=20?'#ca8a04':'#dc2626',t:`ชั่วโมงอบรม = <strong>${train} ชม./คน/ปี</strong> — ${train>=80?'ลงทุนสูงมากด้าน Learning':train>=40?'มาตรฐาน HR สากล':train>=20?'ควรเพิ่มเป็น 40+ ชม.':'ต่ำมาก ควรสร้าง Learning Culture'}`})}
+  if(tech>0){items.push({c:tech>=4?'#16a34a':tech>=3?'#ca8a04':'#dc2626',t:`เทคโนโลยี: <strong>${tl[tech]}</strong>`})}
+  if(cult>0){items.push({c:cult>=4?'#16a34a':cult>=3?'#ca8a04':'#dc2626',t:`วัฒนธรรม: <strong>${cl[cult]}</strong>`})}
+  return items;
+}
+
+function analyze(){
+  const project=g('projectName')||'องค์กร';
+  const period=g('period');
+  const finS=calcFin(),custS=calcCust(),procS=calcProc(),learnS=calcLearn();
+  const scores=[finS,custS,procS,learnS].filter(s=>s!==null);
+  if(!scores.length){alert('กรุณากรอกข้อมูลอย่างน้อย 1 ช่อง');return}
+  const overall=Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+  const info=sLabel(overall);
+  const color=sColor(overall);
+
+  document.getElementById('rTitle').textContent=`ผลวิเคราะห์: ${project}`;
+  document.getElementById('rSub').textContent=(period?`ช่วงเวลา: ${period}  •  `:'')+'วิเคราะห์: '+new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+
+  const oc=document.getElementById('ocirc');
+  oc.style.borderColor=color;
+  document.getElementById('onum').style.color=color;
+  document.getElementById('onum').textContent=overall;
+  document.getElementById('olabel').textContent=info.l;
+  document.getElementById('odesc').textContent=info.d;
+
+  const pDefs=[
+    {name:'💰 การเงิน',s:finS,c:'var(--fin)'},
+    {name:'🤝 ลูกค้า',s:custS,c:'var(--cust)'},
+    {name:'⚙️ กระบวนการ',s:procS,c:'var(--proc)'},
+    {name:'🌱 การเรียนรู้',s:learnS,c:'var(--learn)'}
+  ];
+  document.getElementById('psgrid').innerHTML=pDefs.map(p=>{
+    if(p.s===null)return`<div class="pscard"><div class="pst"><span class="psn" style="color:${p.c}">${p.name}</span><span class="psv" style="color:var(--text3)">N/A</span></div><div class="psbar"><div class="psf" style="width:0;background:var(--border)"></div></div><div class="pss" style="color:var(--text3)">ไม่มีข้อมูล</div></div>`;
+    const lb=sLabel(p.s);
+    return`<div class="pscard"><div class="pst"><span class="psn" style="color:${p.c}">${p.name}</span><span class="psv" style="color:${sColor(p.s)}">${p.s}</span></div><div class="psbar"><div class="psf" style="width:${p.s}%;background:${p.c}"></div></div><div class="pss" style="color:${sColor(p.s)}">${lb.l}</div></div>`;
+  }).join('');
+
+  const analyses=[
+    {title:'💰 วิเคราะห์ด้านการเงิน',c:'var(--fin)',items:buildFinItems()},
+    {title:'🤝 วิเคราะห์ด้านลูกค้า',c:'var(--cust)',items:buildCustItems()},
+    {title:'⚙️ วิเคราะห์กระบวนการภายใน',c:'var(--proc)',items:buildProcItems()},
+    {title:'🌱 วิเคราะห์การเรียนรู้และเติบโต',c:'var(--learn)',items:buildLearnItems()}
+  ];
+  document.getElementById('agrid').innerHTML=analyses.filter(a=>a.items.length).map(a=>
+    `<div class="acard"><div class="actitle" style="color:${a.c}">${a.title}</div>${a.items.map(i=>`<div class="aitem"><div class="adot" style="background:${i.c}"></div><div class="atxt">${i.t}</div></div>`).join('')}</div>`
+  ).join('');
+
+  const stepDefs=[
+    {t:'กำหนดวิสัยทัศน์และยุทธศาสตร์ให้ชัดเจน',d:'ระบุทิศทางที่ชัดเจน วัดได้ สอดคล้องกับเป้าหมาย 3–5 ปี โดยอ้างอิงจากคะแนน BSC ที่ได้',bc:'var(--fin)'},
+    {t:'แปลงกลยุทธ์เป็นวัตถุประสงค์และ KPI ใน 4 มุมมอง',d:'ตั้ง Target KPI ที่ท้าทายแต่ทำได้จริงในทุกมิติ เชื่อมโยงกันเป็น Strategy Map',bc:'var(--cust)'},
+    {t:'สื่อสารเป้าหมายให้ทุกคนในองค์กรเข้าใจ',d:'Cascade KPI ลงสู่ระดับทีมและบุคคล สร้าง Alignment เพื่อขับเคลื่อนไปทิศทางเดียวกัน',bc:'var(--proc)'},
+    {t:'ติดตามผลและปรับปรุงผ่าน Dashboard',d:'ใช้ Dashboard Real-time ตรวจสอบทุกเดือน และ Review กลยุทธ์ทุกไตรมาส',bc:'var(--learn)'}
+  ];
+  document.getElementById('steps').innerHTML=stepDefs.map((s,i)=>
+    `<div class="step" style="border-left-color:${s.bc}"><div class="stepn" style="background:${s.bc}">${i+1}</div><div class="stepc"><strong>${s.t}</strong>${s.d}</div></div>`
+  ).join('');
+
+  const recs=[];
+  if(finS!==null&&finS<60) recs.push('ทบทวนโครงสร้างต้นทุนและกลยุทธ์ราคา หาแหล่งรายได้ใหม่ เพิ่ม Gross Margin');
+  if(custS!==null&&custS<65) recs.push('ลงทุนระบบ CRM และ Customer Feedback Loop เพื่อเพิ่ม CSAT และ Retention Rate');
+  if(procS!==null&&procS<65) recs.push('ทำ Process Mapping ลด Waste ตามหลัก Lean / Six Sigma ลดเวลาและต้นทุนส่งมอบ');
+  if(learnS!==null&&learnS<65) recs.push('สร้าง Learning Culture เพิ่มชั่วโมงอบรม ลด Turnover และเร่ง Digital Adoption');
+  if(overall>=80) recs.push('องค์กรมีผลดำเนินงานดีเยี่ยม ควรต่อยอดสู่ Innovation และ Market Expansion เชิงรุก');
+  else if(overall>=65) recs.push('ผลดำเนินงานดี ควรเสริมจุดแข็งและจัดการจุดอ่อนเพื่อสร้างความสมดุลมากขึ้น');
+  if(!recs.length) recs.push('กรอกข้อมูลเพิ่มเติมในช่องที่ยังว่างเพื่อรับคำแนะนำเชิงกลยุทธ์ที่แม่นยำยิ่งขึ้น');
+
+  document.getElementById('rbox').innerHTML=`<div class="rtitle">💡 ข้อเสนอแนะเชิงกลยุทธ์</div>${recs.map((r,i)=>`<div class="ritem"><div class="rnum">${i+1}</div><div>${r}</div></div>`).join('')}`;
+
+  const res=document.getElementById('results');
+  res.classList.add('show');
+  res.scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('pdfBtn').style.display='inline-flex';
+
+  window._bsc={project,period,overall,info,color,pDefs,analyses,recs,
+    scores:{finS,custS,procS,learnS}};
+}
+
+// ============================
+// PDF — ใช้ jsPDF วาด layout ทั้งหมด (อ่านออก 100%)
+// ============================
+function downloadPDF(){
+  const btn=document.getElementById('pdfBtn');
+  btn.textContent='⏳ กำลังสร้าง PDF...';btn.disabled=true;
+  setTimeout(()=>{_doPDF();btn.innerHTML='📄 ดาวน์โหลด PDF';btn.disabled=false},100);
+}
+function _doPDF(){
+  const {jsPDF}=window.jspdf;
+  const d=window._bsc;
+  if(!d){return}
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,H=297,M=14,CW=W-M*2;
+  let y=0;
+
+  function newPage(){doc.addPage();y=14;drawBg()}
+  function chk(need){if(y+need>275)newPage()}
+  function drawBg(){doc.setFillColor(255,255,255);doc.rect(0,0,W,H,'F')}
+
+  function hline(yy,col=[220,225,235]){doc.setDrawColor(...col);doc.setLineWidth(0.3);doc.line(M,yy,W-M,yy)}
+
+  function sectionBar(title,rgb){
+    chk(12);
+    doc.setFillColor(...rgb);
+    doc.roundedRect(M,y,CW,9,2,2,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(255,255,255);
+    doc.text(title,M+5,y+6.5);
+    y+=12;
+  }
+  function row(label,val,labelColor=[71,85,105],valColor=[30,41,59]){
+    chk(7);
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...labelColor);
+    doc.text(label+':',M+3,y);
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...valColor);
+    doc.text(String(val),M+70,y);
+    y+=6;
+  }
+  function bullet(txt,dotColor=[200,150,10]){
+    chk(10);
+    // strip html tags for PDF
+    const plain=txt.replace(/<[^>]+>/g,'');
+    doc.setFillColor(...dotColor);doc.circle(M+4,y-1.5,1.5,'F');
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(71,85,105);
+    const lines=doc.splitTextToSize(plain,CW-10);
+    doc.text(lines,M+8,y);
+    y+=lines.length*5+2;
+  }
+
+  // PAGE 1
+  drawBg();
+  // top colour strip
+  doc.setFillColor(200,150,10);doc.rect(0,0,W,4,'F');
+  // dark header band
+  doc.setFillColor(30,41,59);doc.rect(0,4,W,40,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(255,255,255);
+  doc.text('BALANCED SCORECARD REPORT',W/2,20,{align:'center'});
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(148,163,184);
+  doc.text('Strategic Performance Analysis  |  4-Perspective Framework',W/2,29,{align:'center'});
+  doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(200,150,10);
+  doc.text(d.project,W/2,40,{align:'center'});
+
+  y=52;
+
+  // Meta row
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(100,116,139);
+  const dateStr=new Date().toLocaleDateString('en-GB',{year:'numeric',month:'long',day:'numeric'});
+  doc.text((d.period?'Period: '+d.period+'   |   ':'')+'Analysis Date: '+dateStr,W/2,y,{align:'center'});
+  y+=10;
+
+  // Overall score pill
+  const oc=d.overall>=80?[22,163,74]:d.overall>=65?[37,99,235]:d.overall>=50?[202,138,4]:d.overall>=35?[234,88,12]:[220,38,38];
+  doc.setFillColor(...oc);doc.roundedRect(M,y,CW,18,4,4,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(255,255,255);
+  doc.text('Overall Score: '+d.overall+'/100  —  '+d.info.l,W/2,y+8,{align:'center'});
+  doc.setFont('helvetica','normal');doc.setFontSize(9);
+  doc.text(d.info.d,W/2,y+14,{align:'center'});
+  y+=24;
+
+  // Perspective score boxes (4 columns)
+  const BW=(CW-9)/4;
+  const pNames=['Financial','Customer','Int. Process','Learning'];
+  const pColors=[[217,119,6],[2,132,199],[124,58,237],[190,24,93]];
+  const pScores=[d.scores.finS,d.scores.custS,d.scores.procS,d.scores.learnS];
+  pNames.forEach((nm,i)=>{
+    const bx=M+i*(BW+3);const sc=pScores[i];
+    doc.setFillColor(248,250,252);doc.roundedRect(bx,y,BW,24,3,3,'F');
+    doc.setDrawColor(...pColors[i]);doc.setLineWidth(0.6);doc.roundedRect(bx,y,BW,24,3,3,'S');
+    // top colour bar
+    doc.setFillColor(...pColors[i]);doc.roundedRect(bx,y,BW,3,2,2,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...pColors[i]);
+    doc.text(nm,bx+BW/2,y+9,{align:'center'});
+    const sv=sc!==null?String(sc):'N/A';
+    const sc2=sc!==null?(sc>=80?[22,163,74]:sc>=65?[37,99,235]:sc>=50?[202,138,4]:[220,38,38]):[148,163,184];
+    doc.setFontSize(15);doc.setTextColor(...sc2);
+    doc.text(sv,bx+BW/2,y+20,{align:'center'});
+  });
+  y+=30;
+
+  // Analysis sections
+  const sectionDefs=[
+    {title:'Financial Perspective Analysis',rgb:[217,119,6],items:buildFinItems()},
+    {title:'Customer Perspective Analysis',rgb:[2,132,199],items:buildCustItems()},
+    {title:'Internal Process Perspective Analysis',rgb:[124,58,237],items:buildProcItems()},
+    {title:'Learning & Growth Perspective Analysis',rgb:[190,24,93],items:buildLearnItems()}
+  ];
+  sectionDefs.forEach(sec=>{
+    if(!sec.items.length)return;
+    sectionBar(sec.title,sec.rgb);
+    sec.items.forEach(item=>bullet(item.t,sec.rgb));
+    y+=3;
+  });
+
+  // Strategy Steps
+  sectionBar('Strategic Actions — 4 Steps to Execute BSC',[30,41,59]);
+  const steps=[
+    ['1','Define Vision & Strategy','Set clear, measurable direction aligned with long-term goals based on BSC analysis'],
+    ['2','Translate Strategy into KPIs','Connect all 4 perspectives to actionable, measurable targets in a Strategy Map'],
+    ['3','Communicate to All Levels','Cascade goals from executives to frontline staff — build organization-wide Alignment'],
+    ['4','Monitor & Improve via Dashboard','Monthly KPI tracking, quarterly strategy review, and continuous improvement cycle']
+  ];
+  const sColors=[[217,119,6],[2,132,199],[124,58,237],[190,24,93]];
+  steps.forEach((s,i)=>{
+    chk(16);
+    doc.setFillColor(248,250,252);doc.roundedRect(M,y,CW,13,2,2,'F');
+    doc.setFillColor(...sColors[i]);doc.roundedRect(M,y,9,13,2,2,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(255,255,255);
+    doc.text(s[0],M+4.5,y+8.5,{align:'center'});
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...sColors[i]);
+    doc.text(s[1],M+12,y+5.5);
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(71,85,105);
+    doc.text(s[2],M+12,y+10.5);
+    y+=16;
+  });
+  y+=3;
+
+  // Recommendations
+  if(d.recs.length){
+    sectionBar('Strategic Recommendations',[200,150,10]);
+    d.recs.forEach((r,i)=>{
+      chk(10);
+      doc.setFillColor(200,150,10);doc.roundedRect(M+2,y-4,6,6,1,1,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(255,255,255);
+      doc.text(String(i+1),M+5,y,{align:'center'});
+      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(71,85,105);
+      const lines=doc.splitTextToSize(r,CW-12);
+      doc.text(lines,M+11,y);
+      y+=lines.length*5+4;
+    });
+  }
+
+  // Footer on every page
+  const total=doc.getNumberOfPages();
+  for(let p=1;p<=total;p++){
+    doc.setPage(p);
+    doc.setFillColor(30,41,59);doc.rect(0,287,W,10,'F');
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(148,163,184);
+    doc.text('Balanced Scorecard Report  |  '+d.project+'  |  '+dateStr,M,293);
+    doc.text('Page '+p+' / '+total,W-M,293,{align:'right'});
+  }
+
+  doc.save('BSC_'+(d.project.replace(/\s+/g,'_')||'Report')+'.pdf');
+}
+
+function resetAll(){
+  if(!confirm('ต้องการล้างข้อมูลทั้งหมดหรือไม่?'))return;
+  document.querySelectorAll('input,select').forEach(el=>{
+    if(el.type==='range'){el.value=el.defaultValue;const m={satisfaction:'satVal',quality:'qualVal',empSat:'empVal'};if(m[el.id])document.getElementById(m[el.id]).textContent=el.value+'%'}
+    else el.value='';
+  });
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('pdfBtn').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
